@@ -3,10 +3,10 @@ name: Binary Compatibility
 on:
   pull_request:
     paths:
-      - 'assertj-core/**'
+      - assertj-core/**
   push:
     paths:
-      - 'assertj-core/**'
+      - assertj-core/**
 
 env:
   MAVEN_ARGS: -B -V -ntp -e -Djansi.passthrough=true -Dstyle.color=always -DskipTests
@@ -14,16 +14,16 @@ env:
 jobs:
   verify-with-base:
     name: Verify with target branch
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: github.base_ref != null
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: '21'
-          cache: 'maven'
+          cache: maven
 
       - name: Checkout `${{ github.base_ref }}` into subfolder
         uses: actions/checkout@v4
@@ -47,15 +47,15 @@ jobs:
   verify-with-release:
 
     name: Verify with latest release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: '21'
-          cache: 'maven'
+          cache: maven
 
       - name: Compare with the latest release
         run: >

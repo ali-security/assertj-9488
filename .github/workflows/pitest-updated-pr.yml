@@ -15,7 +15,7 @@ name: Comment on the pull request
 # access to secrets
 on:
   workflow_run:
-    workflows: ["Receive"]
+    workflows: [Receive]
     types:
       - completed
 
@@ -25,14 +25,14 @@ env:
 jobs:
   pitest-update-pr:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: debug
         uses: hmarr/debug-action@v2
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: '21'
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v3
