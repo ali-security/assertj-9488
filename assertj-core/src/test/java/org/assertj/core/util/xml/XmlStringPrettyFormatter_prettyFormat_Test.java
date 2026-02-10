@@ -15,6 +15,7 @@ package org.assertj.core.util.xml;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.catchException;
 import static org.assertj.core.util.xml.XmlStringPrettyFormatter.xmlPrettyFormat;
 
 import java.math.BigDecimal;
@@ -22,6 +23,8 @@ import java.util.Locale;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -95,6 +98,32 @@ class XmlStringPrettyFormatter_prettyFormat_Test {
       assertThat(e.getCause()).hasMessageContaining(
                                                     "The element type \"channel\" must be terminated by the matching end-tag \"</channel>\"");
     }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      // Injection into document content
+      "<?xml version=\"1.0\"?>\n" +
+      "<!DOCTYPE root [\n" +
+      "  <!ENTITY xxe SYSTEM \"file:///etc/hosts\">\n" +
+      "]>\n" +
+      "<root>&xxe;</root>",
+      // Injection during document parsing
+      "<?xml version=\"1.0\"?>\n" +
+      "<!DOCTYPE root [\n" +
+      "  <!ENTITY % xxe SYSTEM \"file:///etc/hosts\">\n" +
+      "  %xxe;\n" +
+      "]>\n" +
+      "<root>foo</root>"
+  })
+  void should_fail_if_input_contains_doctype_declaration(String input) {
+    // WHEN
+    Exception exception = catchException(() -> xmlPrettyFormat(input));
+    // THEN
+    assertThat(exception).isInstanceOf(RuntimeException.class)
+                         .hasMessage("Unable to format XML string");
+    assertThat(exception.getCause()).isInstanceOf(SAXParseException.class)
+                                    .hasMessageContaining("DOCTYPE is disallowed");
   }
 
 }
